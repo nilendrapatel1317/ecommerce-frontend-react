@@ -1,25 +1,39 @@
 // App.js
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import HeroBanner from './components/HeroBanner';
-import Categories from './components/Categories';
-import FeaturedProducts from './components/FeaturedProducts';
-import ProductGrid from './components/ProductGrid';
-import Footer from './components/Footer';
-import HomeSlider from './components/HomeSlider';
+import AppRoutes from './AppRouter';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="container px-4 py-6 mx-auto">
-        {/* <HeroBanner /> */}
-        <HomeSlider />
-        <Categories />
-        <FeaturedProducts />
-        <ProductGrid />
-      </main>
-      <Footer />
+      <AppRoutes />
+      <Toaster 
+        position="bottom-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </div>
   );
 }
