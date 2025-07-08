@@ -5,8 +5,10 @@ import OAuth2Redirect from "./pages/auth/OAuth2Redirect";
 import ChangePassword from "./pages/auth/ChangePassword";
 import Settings from "./pages/auth/Settings";
 import Profile from "./pages/user/Profile";
+import ProductList from "./components/product/ProductList";
 import Home from "./pages/index";
 import TestAPI from "./pages/TestAPI/TestAPI";
+import AuthTest from "./components/common/AuthTest";
 
 
 function AppRoutes() {
@@ -19,7 +21,9 @@ function AppRoutes() {
       <Route path="/change-password" element={<ChangePassword />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/products" element={<ProductList />} />
       <Route path="/test" element={<TestAPI />} />
+      <Route path="/auth-test" element={<AuthTest />} />
 
     </Routes>
   );

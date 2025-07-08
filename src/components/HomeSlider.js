@@ -12,7 +12,7 @@ import './styles.css';
 // import required modules
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 
-export default function HomeSlider() {
+const HomeSlider =()=> {
   return (
     <>
       <Swiper
@@ -43,3 +43,5 @@ export default function HomeSlider() {
     </>
   );
 }
+
+export default HomeSlider;

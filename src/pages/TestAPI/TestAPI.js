@@ -24,7 +24,7 @@ const TestAPI = () => {
       <br/>
       <div className="mt-4">
         {data && (
-          <pre style={{ background: '#f4f4f4', padding: '1rem', borderRadius: '6px', overflowX: 'auto' }}>
+          <pre style={{ color : "black" ,padding: '1rem', borderRadius: '6px', overflowX: 'auto' }}>
             {JSON.stringify(data, null, 2)}
           </pre>
         )}

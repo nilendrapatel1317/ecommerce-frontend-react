@@ -15,44 +15,35 @@ import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { IconButton, Badge, Tooltip } from "@mui/material";
 import AccountMenu from "./material UI components/AccountMenu";
+import { fetchUserProfile } from '../services/UserService';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
 
-  const checkLoginStatus = () => {
-    // Check if user is logged in
-    const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
-
-    if (token && userData) {
-      setIsLoggedIn(true);
-      setUser(JSON.parse(userData));
-    } else {
-      setIsLoggedIn(false);
+  // Fetch user profile and update localStorage
+  const syncUserProfile = async () => {
+    try {
+      const res = await fetchUserProfile();
+      if (res.data) {
+        setUser(res?.data?.data);
+        localStorage.setItem('user', JSON.stringify(res?.data?.data));
+        setIsLoggedIn(true);
+      }
+    } catch (e) {
       setUser(null);
+      setIsLoggedIn(false);
+      localStorage.removeItem('user');
     }
   };
 
   useEffect(() => {
-    // Initial check
-    checkLoginStatus();
-
-    // Listen for storage changes (when login/logout happens)
-    const handleStorageChange = () => {
-      checkLoginStatus();
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-
-    // Also listen for custom events
-    window.addEventListener("loginStatusChanged", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("loginStatusChanged", handleStorageChange);
-    };
+    syncUserProfile();
+    // Listen for cart changes or loginStatusChanged
+    const handler = () => syncUserProfile();
+    window.addEventListener('loginStatusChanged', handler);
+    return () => window.removeEventListener('loginStatusChanged', handler);
   }, []);
 
   const handleLogout = () => {
@@ -137,10 +128,9 @@ const Navbar = () => {
             <Tooltip title="Wishlist Items">
               <IconButton aria-label="cart">
                 <Badge
-                  badgeContent={
-                    user?.wishlist?.length ? user?.wishlist?.length : 0
-                  }
+                  badgeContent={user?.wishlist?.length || 0}
                   color="primary"
+                  showZero
                 >
                   <Favorite className="text-red-500" />
                 </Badge>
@@ -150,10 +140,9 @@ const Navbar = () => {
             <Tooltip title="Cart Items">
               <IconButton aria-label="cart">
                 <Badge
-                  badgeContent={
-                    user?.cartItems?.length ? user?.cartItems?.length : 0
-                  }
+                  badgeContent={user?.cartItems?.length || 0}
                   color="primary"
+                  showZero
                 >
                   <ShoppingCart />
                 </Badge>
