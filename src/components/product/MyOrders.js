@@ -24,7 +24,7 @@ const MyOrders = ({ user }) => {
   const orders = (user?.orders || []).slice().sort((a, b) => (b.id || 0) - (a.id || 0));
   // console.log(orders)
   return (
-    <Box>
+    <Box sx={{padding:3}}>
       <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>My Orders</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         There {orders.length === 1 ? 'is' : 'are'} <span style={{ color: '#e53935', fontWeight: 600 }}>{orders.length}</span> order{orders.length === 1 ? '' : 's'}

@@ -1,5 +1,5 @@
 // App.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import AppRoutes from './AppRouter';
@@ -7,11 +7,20 @@ import { Toaster } from 'react-hot-toast';
 import { CartProvider } from './CartContext';
 
 function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
+
   return (
     <CartProvider>
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <AppRoutes />
+        <AppRoutes user={user} />
         <Toaster 
           position="bottom-right"
           toastOptions={{

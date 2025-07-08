@@ -125,17 +125,19 @@ const Navbar = () => {
 
           {/* Shopping Cart - always visible */}
           <div className="flex">
-            <Tooltip title="Wishlist Items">
-              <IconButton aria-label="cart">
-                <Badge
-                  badgeContent={user?.wishlist?.length || 0}
-                  color="primary"
-                  showZero
-                >
-                  <Favorite className="text-red-500" />
-                </Badge>
-              </IconButton>
-            </Tooltip>
+            <Link to="/wishlist" className="flex items-center">
+              <Tooltip title="Wishlist Items">
+                <IconButton aria-label="cart">
+                  <Badge
+                    badgeContent={user?.wishlist?.length || 0}
+                    color="primary"
+                    showZero
+                  >
+                    <Favorite className="text-red-500" />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+            </Link>
 
             <Link to="/my/cart" className="flex items-center">
               <Tooltip title="Cart Items">

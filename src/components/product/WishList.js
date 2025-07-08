@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Typography, Divider, List, ListItem, ListItemAvatar, Avatar, IconButton, Rating } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { motion } from "framer-motion";
+import { deleteWishlistItem } from '../../services/WishlistService';
+import { fetchUserProfile } from '../../services/UserService';
+import toast from "react-hot-toast";
 
 const getDiscountPercent = (original, price) => {
   if (!original || original <= price) return null;
@@ -9,17 +12,33 @@ const getDiscountPercent = (original, price) => {
 };
 
 const WishList = ({ user }) => {
-  const [wishlist, setWishlist] = useState(user?.wishlist || []);
+  const [wishlist, setWishlist] = useState(Array.isArray(user?.wishlist) ? user.wishlist : []);
 
-  const handleRemove = (id) => {
-    const updated = wishlist.filter(item => item.id !== id);
-    setWishlist(updated);
-    // Optionally update localStorage/user here
+  useEffect(() => {
+    setWishlist(Array.isArray(user?.wishlist) ? user.wishlist : []);
+  }, [user]);
+
+  const handleRemove = async (id) => {
+    try {
+      await deleteWishlistItem(id);
+      toast.success('Item removed from wishlist!');
+      // Fetch updated user profile
+      const res = await fetchUserProfile();
+      const updatedUser = res?.data?.data;
+      if (updatedUser) {
+        setWishlist(Array.isArray(updatedUser.wishlist) ? updatedUser.wishlist : []);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        // Notify Navbar and others
+        window.dispatchEvent(new Event("loginStatusChanged"));
+      }
+    } catch (err) {
+      toast.error('Failed to remove item from wishlist');
+    }
   };
 
   return (
-    <Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>WishList</Typography>
+    <Box sx={{padding:3}}>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>My WishList Items</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         There {wishlist.length === 1 ? 'is' : 'are'} <span style={{ color: '#e53935', fontWeight: 600 }}>{wishlist.length}</span> product{wishlist.length === 1 ? '' : 's'} in your WishList
       </Typography>
@@ -86,4 +105,4 @@ const WishList = ({ user }) => {
   );
 };
 
-export default WishList; 
+export default WishList;
