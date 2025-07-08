@@ -28,7 +28,7 @@ const ProductCard = ({
   
   const cartProductIds = Array.isArray(user?.cartItems) ? user.cartItems.map(item => item?.product?.id) : [];
   const [inCart, setInCart] = useState(false || cartProductIds.includes(product.id))
-  // const inCart = ;
+
   console.log(inCart)
 
   const handleAddToCart = async () => {

@@ -15,7 +15,7 @@ import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { IconButton, Badge, Tooltip } from "@mui/material";
 import AccountMenu from "./material UI components/AccountMenu";
-import { fetchUserProfile } from '../services/UserService';
+import { fetchUserProfile } from "../services/UserService";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -28,13 +28,13 @@ const Navbar = () => {
       const res = await fetchUserProfile();
       if (res.data) {
         setUser(res?.data?.data);
-        localStorage.setItem('user', JSON.stringify(res?.data?.data));
+        localStorage.setItem("user", JSON.stringify(res?.data?.data));
         setIsLoggedIn(true);
       }
     } catch (e) {
       setUser(null);
       setIsLoggedIn(false);
-      localStorage.removeItem('user');
+      localStorage.removeItem("user");
     }
   };
 
@@ -42,8 +42,8 @@ const Navbar = () => {
     syncUserProfile();
     // Listen for cart changes or loginStatusChanged
     const handler = () => syncUserProfile();
-    window.addEventListener('loginStatusChanged', handler);
-    return () => window.removeEventListener('loginStatusChanged', handler);
+    window.addEventListener("loginStatusChanged", handler);
+    return () => window.removeEventListener("loginStatusChanged", handler);
   }, []);
 
   const handleLogout = () => {
@@ -137,17 +137,19 @@ const Navbar = () => {
               </IconButton>
             </Tooltip>
 
-            <Tooltip title="Cart Items">
-              <IconButton aria-label="cart">
-                <Badge
-                  badgeContent={user?.cartItems?.length || 0}
-                  color="primary"
-                  showZero
-                >
-                  <ShoppingCart />
-                </Badge>
-              </IconButton>
-            </Tooltip>
+            <Link to="/my/cart" className="flex items-center">
+              <Tooltip title="Cart Items">
+                <IconButton aria-label="cart">
+                  <Badge
+                    badgeContent={user?.cartItems?.length || 0}
+                    color="primary"
+                    showZero
+                  >
+                    <ShoppingCart />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+            </Link>
           </div>
         </motion.div>
       </div>
