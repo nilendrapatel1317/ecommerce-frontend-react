@@ -139,7 +139,7 @@ const Navbar = () => {
               </Tooltip>
             </Link>
 
-            <Link to="/my/cart" className="flex items-center">
+            <Link to="/cart" className="flex items-center">
               <Tooltip title="Cart Items">
                 <IconButton aria-label="cart">
                   <Badge
