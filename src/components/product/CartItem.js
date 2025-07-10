@@ -32,6 +32,8 @@ import {
 } from "@mui/icons-material";
 import PromoCodeModal from "./PromoCodeModal";
 import { applyPromoCode, removePromoCode } from "../../services/PromoCodeService";
+import { fetchAllUserAddress } from "../../services/AddressService";
+import { createOrder, cancelOrder } from "../../services/OrderService";
 
 const getDiscountPercent = (original, price) => {
   if (!original || original <= price) return null;
@@ -46,6 +48,16 @@ const CartItem = () => {
   const [promoOpen, setPromoOpen] = useState(false);
   const [appliedPromo, setAppliedPromo] = useState(null); // { code, discountAmount }
   const [payable, setPayable] = useState(null); // subtotal + delivery - discount
+
+  // Address selection modal state
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
+  const [addresses, setAddresses] = useState([]);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [paymentModeModalOpen, setPaymentModeModalOpen] = useState(false);
+  const [createdOrder, setCreatedOrder] = useState(null); // store created order
+  const [selectedPaymentMode, setSelectedPaymentMode] = useState(null);
 
   // Calculate totals
   const subtotal = cartItems.reduce(
@@ -119,6 +131,70 @@ const CartItem = () => {
   // Handle promo remove callback from modal
   const handleRemovePromo = () => {
     setAppliedPromo(null);
+  };
+
+  // Fetch addresses when address modal opens
+  const handleOpenAddressModal = async () => {
+    setAddressModalOpen(true);
+    setAddressLoading(true);
+    try {
+      const res = await fetchAllUserAddress();
+      setAddresses(res?.data?.data || []);
+    } catch (err) {
+      toast.error("Failed to fetch addresses");
+    } finally {
+      setAddressLoading(false);
+    }
+  };
+
+  // Handle order creation
+  const handleCreateOrder = async () => {
+    if (!selectedAddressId) return;
+    setOrderLoading(true);
+    try {
+      const payload = {
+        address: { id: selectedAddressId },
+        appliedCouponCode: appliedPromo?.code || undefined,
+        payableAmount: totalPayable,
+      };
+      const createdRes = await createOrder(payload);
+      console.log(createdRes)
+      setCreatedOrder(createdRes?.data?.data); // store order data
+      toast.success("Order created! Proceed to payment.");
+      setAddressModalOpen(false);
+      setPaymentModeModalOpen(true);
+    } catch (err) {
+      toast.error("Failed to create order");
+    } finally {
+      setOrderLoading(false);
+    }
+  };
+
+  // Handle cancel order
+  const handleCancelOrder = async () => {
+    if (!createdOrder?.id) return;
+    try {
+      const res = await cancelOrder(createdOrder.id);
+      console.log(res)
+      toast.success("Order cancelled.");
+    } catch (err) {
+      toast.success("Order cancelled.");
+    } finally {
+      setPaymentModeModalOpen(false);
+      setCreatedOrder(null);
+      setSelectedPaymentMode(null);
+    }
+  };
+
+  // Handle proceed to pay
+  const handleProceedToPay = () => {
+    if (!selectedPaymentMode) return;
+    // Implement payment logic here
+    // After payment, close modal and reset state
+    setPaymentModeModalOpen(false);
+    setCreatedOrder(null);
+    setSelectedPaymentMode(null);
+    toast.success("Proceeding to payment...");
   };
 
   return (
@@ -444,6 +520,7 @@ const CartItem = () => {
                     🛍️
                   </span>
                 }
+                onClick={handleOpenAddressModal}
               >
                 CHECKOUT
               </Button>
@@ -461,6 +538,120 @@ const CartItem = () => {
         onApplyPromo={handleApplyPromo}
         onRemovePromo={handleRemovePromo}
       />
+      {/* Address Selection Modal */}
+      <Modal open={addressModalOpen} onClose={() => setAddressModalOpen(false)}>
+        <Box sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 400,
+          bgcolor: "background.paper",
+          borderRadius: 3,
+          boxShadow: 24,
+          p: 4,
+        }}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+            Select Delivery Address
+          </Typography>
+          {addressLoading ? (
+            <Typography>Loading addresses...</Typography>
+          ) : addresses.length === 0 ? (
+            <Typography>No addresses found. Please add one in your profile.</Typography>
+          ) : (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}>
+              {addresses.map((addr) => (
+                <Box
+                  key={addr.id}
+                  onClick={() => setSelectedAddressId(addr.id)}
+                  sx={{
+                    border: selectedAddressId === addr.id ? "2px solid #ff5a5f" : "1px solid #ccc",
+                    borderRadius: 2,
+                    p: 2,
+                    cursor: "pointer",
+                    background: selectedAddressId === addr.id ? "#fff3f2" : "#fafafa",
+                    transition: "border 0.2s, background 0.2s",
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 400 }}>{addr.addressLine}</Typography>
+                  <Typography variant="body2">{addr.addressLine1} {addr.addressLine2}</Typography>
+                  <Typography variant="body2">{addr.city} {addr.state} - {addr.zipCode}</Typography>
+                  <Typography variant="body2">{addr.country}</Typography>
+                  <Typography variant="body2">Phone: {user.phone}</Typography>
+                  <Typography variant="body2">Address Type: {addr.addressType}</Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={!selectedAddressId || orderLoading}
+            onClick={handleCreateOrder}
+            sx={{ mt: 2, fontWeight: 700 }}
+          >
+            {orderLoading ? "Placing Order..." : "Go to Payment Mode"}
+          </Button>
+        </Box>
+      </Modal>
+      {/* Payment Mode Modal */}
+      <Modal open={paymentModeModalOpen} onClose={() => {}} disableEscapeKeyDown disableBackdropClick>
+        <Box sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 500,
+          bgcolor: "background.paper",
+          borderRadius: 3,
+          boxShadow: 24,
+          p: 4,
+        }}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+            Select Payment Mode
+          </Typography>
+          <Button
+            variant={selectedPaymentMode === "WALLET" ? "contained" : "outlined"}
+            color="primary"
+            fullWidth
+            sx={{ mb: 2, fontWeight: 700 }}
+            onClick={() => setSelectedPaymentMode("WALLET")}
+          >
+            Pay by Wallet
+          </Button>
+          <Button
+            variant={selectedPaymentMode === "RAZORPAY" ? "contained" : "outlined"}
+            color="secondary"
+            fullWidth
+            sx={{ fontWeight: 700, mb: 2 }}
+            onClick={() => setSelectedPaymentMode("RAZORPAY")}
+          >
+            Pay by Razorpay
+          </Button>
+          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+            <Button
+              variant="outlined"
+              color="error"
+              fullWidth
+              onClick={handleCancelOrder}
+              sx={{ fontWeight: 700 }}
+            >
+              Cancel Order
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              fullWidth
+              disabled={!selectedPaymentMode}
+              onClick={handleProceedToPay}
+              sx={{ fontWeight: 700 }}
+            >
+              Proceed to Pay
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 };

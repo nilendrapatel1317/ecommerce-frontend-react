@@ -41,7 +41,6 @@ const PromoCodeModal = ({ open, onClose, subtotal, sku, totalItem, appliedPromo,
   const [applying, setApplying] = useState(false);
   const [selectedPromo, setSelectedPromo] = useState(null);
   const [applyError, setApplyError] = useState(null);
-  console.log(subtotal);
 
   useEffect(() => {
     if (!open) return;

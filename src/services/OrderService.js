@@ -13,7 +13,10 @@ export const deleteOrder = (id) => api.delete(`/api/v1/orders/${id}`);
 export const fetchAllOrders = () => api.get('/api/v1/orders');
 
 // Create a new order
-export const createOrder = (data) => api.post('/api/v1/orders', data);
+export const createOrder = (data) => api.post('/api/v1/user/orders', data);
+
+// cancel order
+export const cancelOrder = (orderId) => api.get(`/api/v1/user/orders/cancel-order/${orderId}`)
 
 // Place a new order
 export const placeOrder = (data) => api.post('/api/v1/orders/place', data);
